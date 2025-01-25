@@ -175,10 +175,19 @@ class Camera:
         return ray, ray0
 
     def forwardprojectPoint(self, x, y, z, correctRefraction=True, verbose=False):
+        
         if(correctRefraction is False):
             p3 = cv2.projectPoints(np.array([[[x,y,z]]]), self.R, self.t, self.K, self.dist)[0]
             return p3.flatten()
         
+
+        """
+        n_air= 1.0
+        n_acrylic= 1.49 # Change to accurate refractive index
+        n_water= 1.33
+        """
+
+
         p1 = np.array([x,y,z])
         c1 = self.pos.flatten()
         w = self.plane.normal
@@ -226,6 +235,27 @@ class Camera:
         y2 = (N * sy**2+(sx**2/r**2)-e**2)
         y1 = 2 * e**2 * sy
         y0 = -e**2 * sy**2
+        
+        """
+        # 4th Order polynomial for air--> acrylic--> water
+        sx = p1_proj[0]
+        sy = p1_proj[1]
+        e = c1_proj[0]
+
+        r1 = n_air / n_acrylic  # Refractive index ratio (air to acrylic)
+        N1 = (1 / r1**2) - 1
+        
+        r2 = n_acrylic / n_water  # Refractive index ratio (air to acrylic)
+        N2 = (1 / r2**2) - 1
+
+        y4 = N1*N2
+        y3 = -2* N1*N2 *sy
+        y2 = (N1*N2 * sy**2+(sx**2/r**2)-e**2)
+        y1 = 2 * e**2 * sy
+        y0 = -e**2 * sy**2
+        
+
+        """
 
         coeffs = [y4, y3, y2, y1, y0]
         res = np.roots(coeffs)
