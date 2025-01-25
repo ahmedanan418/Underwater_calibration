@@ -31,6 +31,9 @@ ap.add_argument('-cs', '--checkerboardSize', nargs='+', type=int, help='number o
 ap.add_argument('-ss', '--squareSize', help='size of the squares in centimeters');
 ap.add_argument('-if', '--imageFolder', help='path to the folder containing the calibration images');
 ap.add_argument('-it', '--imageType', help='type of image files. E.g. .png or .jpg');
+ap.add_argument('-n_air', '--refractive_index_air', type=float, default=1.0, help='refractive index of air (default: 1.0)');
+ap.add_argument('-n_acrylic', '--refractive_index_acrylic', type=float, default=1.49, help='refractive index of acrylic (default: 1.49)');
+ap.add_argument('-n_water', '--refractive_index_water', type=float, default=1.33, help='refractive index of water (default: 1.33)');
 
 args = vars(ap.parse_args());
 
@@ -58,12 +61,23 @@ if args.get('imageType', None) is None:
 else:
     imageType = args['imageType']
 
+
+
+# Refractive indices
+n_air = args['refractive_index_air']
+n_acrylic = args['refractive_index_acrylic']
+n_water = args['refractive_index_water']
+
 print('Calibrating camera using the following parameters:')
 print(' - image folder: ' + imageFolder)
 print(' - checkerboard size: ' + str(checkerboardSize))
-print(' - square size. ' + str(squareSize))
+print(' - square size: ' + str(squareSize))
+print(' - refractive index of air: ' + str(n_air))
+print(' - refractive index of acrylic: ' + str(n_acrylic))
+print(' - refractive index of water: ' + str(n_water))
       
 cam = Camera()
+cam.set_refractive_indices(n_air, n_acrylic, n_water)
 cam.calibrateFromFolder(imageFolder + '*' + imageType, checkerboardSize, squareSize, verbose=True)
 
 print('Intrinsic: \n' + str(cam.K))
